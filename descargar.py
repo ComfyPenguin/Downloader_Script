@@ -1,5 +1,7 @@
 import subprocess
 import sys
+import os
+from pathlib import Path
 
 def verificar_e_instalar_dependencias():
     """
@@ -56,16 +58,21 @@ def descargar_youtube(url, formato):
     """
     if formato not in ["mp3", "mp4", "mkv"]:
         raise ValueError("Formato no válido. Usa: mp3, mp4 o mkv")
-
+    
+    # Crear carpeta de descargas si no existe
+    carpeta_descargas = os.path.expanduser("~/Descargas")
+    if not os.path.exists(carpeta_descargas):
+        os.makedirs(carpeta_descargas)
+    
     # Comando base
     comando = ["yt-dlp", "-f", "bestvideo+bestaudio/best"]
 
     if formato == "mp3":
         # Extraer solo audio y convertir a mp3
-        comando += ["--extract-audio", "--audio-format", "mp3", "-o", "%(title)s.%(ext)s"]
+        comando += ["--extract-audio", "--audio-format", "mp3", "-o", os.path.join(carpeta_descargas, "%(title)s.%(ext)s")]
     else:
         # Descargar en video y convertir al formato deseado
-        comando += ["--merge-output-format", formato, "-o", "%(title)s.%(ext)s"]
+        comando += ["--merge-output-format", formato, "-o", os.path.join(carpeta_descargas, "%(title)s.%(ext)s")]
 
     comando.append(url)
     
@@ -73,7 +80,7 @@ def descargar_youtube(url, formato):
     try:
         resultado = subprocess.run(comando, check=True, capture_output=True, text=True)
         print(resultado.stdout)
-        print("✅ Descarga completada exitosamente!")
+        print(f"✅ Descarga completada exitosamente en: {carpeta_descargas}")
     except subprocess.CalledProcessError as e:
         print("❌ Error al descargar el video:")
         print(e.stderr)
@@ -87,19 +94,24 @@ def descargar_twitter(url, formato):
     """
     if formato not in ["mp3", "mp4", "gif"]:
         raise ValueError("Formato no válido. Usa: mp3, mp4 o gif")
+    
+    # Crear carpeta de descargas si no existe
+    carpeta_descargas = os.path.expanduser("~/Videos/YT-DLP")
+    if not os.path.exists(carpeta_descargas):
+        os.makedirs(carpeta_descargas)
 
     # Comando base
     comando = ["yt-dlp"]
 
     if formato == "mp3":
         # Extraer solo audio y convertir a mp3
-        comando += ["--extract-audio", "--audio-format", "mp3", "-o", "%(title)s.%(ext)s"]
+        comando += ["--extract-audio", "--audio-format", "mp3", "-o", os.path.join(carpeta_descargas, "%(title)s.%(ext)s")]
     elif formato == "gif":
         # Descargar video y convertir a gif
-        comando += ["-o", "%(title)s.%(ext)s", "--recode-video", "gif"]
+        comando += ["-o", os.path.join(carpeta_descargas, "%(title)s.%(ext)s"), "--recode-video", "gif"]
     else:
         # Descargar en mp4
-        comando += ["-f", "best", "-o", "%(title)s.%(ext)s"]
+        comando += ["-f", "best", "-o", os.path.join(carpeta_descargas, "%(title)s.%(ext)s")]
 
     comando.append(url)
 
@@ -107,7 +119,7 @@ def descargar_twitter(url, formato):
     try:
         resultado = subprocess.run(comando, check=True, capture_output=True, text=True)
         print(resultado.stdout)
-        print("✅ Descarga completada exitosamente!")
+        print(f"✅ Descarga completada exitosamente en: {carpeta_descargas}")
     except subprocess.CalledProcessError as e:
         print("❌ Error al descargar el video:")
         print(e.stderr)
